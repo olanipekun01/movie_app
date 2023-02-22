@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 
 
 
-export default class SearchInput extends Component {
+class SearchInput extends Component {
     state={
         entry: ''
     }
@@ -38,4 +38,6 @@ export default class SearchInput extends Component {
       </div>
     )
   }
-}
+};
+
+export default SearchInput;

@@ -5,13 +5,6 @@ import MovieList from './MovieList'
 import '../styles/style.css'
 
 
-// state = {
-//     movies: [],
-//     select_val: ""
-// }
-
-// let handle_set = ""
-
 
 const genres = [
   {
@@ -94,65 +87,84 @@ const genres = [
 ]
 
 
+class Movie extends Component {
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      movies: "",
+      filteredMovies: "",
+      select_val: ""
+    }
+  }
 
+  onSearchSubmit = async(entry)=> {
+      console.log(entry)
+      const query = 'Jack+Reacher'
+      const api_key = 'c30084c08a5a044278c3d2d9aa8b8082'
+      const response = await axios.get(
+          // `http://www.omdbapi.com/?s=${entry}&apikey=cf8b3ae3`
+          
+          `https://api.themoviedb.org/3/search/movie?api_key=${api_key}&query=${entry}`
+      )
+      console.log(response.data.results)
+      this.setState({
+        movies: response.data.results,
+        filteredMovies: response.data.results
+      }, () => {
+        this.onSelectChange()
+      });
+  }
 
-function Movie() {
-  const [movies, setMovies] = useState("");
-  const [filteredMovies, setFilteredMovies] = useState("");
-  const [select_val, setSelect_val] = useState("");
+ 
 
+  onSelectChange = (val) => {
+    this.setState({
+      select_val: val
+    }, () => {
+      if (val != "" && this.state.movies.length != 0){
+        let movieAmount = this.state.movies.filter((val) => {
+          if (this.state.select_val === "" || this.state.select_val === undefined){
+            return true;
+          } else {
+            for (let i = 0; i < val.genre_ids.length; i++) {
+              if (val.genre_ids[i] == genres.find(genre => genre.name === this.state.select_val).genre_code) {
+                return true;
+              } 
+            }
+          }
+          return false;
+        })
+        this.setState({
+          filteredMovies: movieAmount
+        });
+      }
+    });
+   
+  }
 
-  const onSearchSubmit = async(entry)=> {
-    console.log(entry)
-    const query = 'Jack+Reacher'
-    const api_key = 'c30084c08a5a044278c3d2d9aa8b8082'
-    const response = await axios.get(
-        // `http://www.omdbapi.com/?s=${entry}&apikey=cf8b3ae3`
-        
-        `https://api.themoviedb.org/3/search/movie?api_key=${api_key}&query=${entry}`
-    )
-    console.log(response.data.results)
-    // this.setState({movies: response.data.results})
-    setMovies(response.data.results);
-    setFilteredMovies(movies);
-}
-
-  const filterMovie = (val) => {
-    // console.log("gen find", genres.find(genre => genre.name === select_val).genre_code)
-    for (let i = 0; i < val.genre_ids.length; i++) {
-      if (val.genre_ids[i] == genres.find(genre => genre.name === select_val).genre_code) {
-        return true;
+  filterMovie = (val) => {
+    if (this.state.select_val === "" || this.state.select_val === undefined){
+      return true;
+    } else {
+      for (let i = 0; i < val.genre_ids.length; i++) {
+        if (val.genre_ids[i] == genres.find(genre => genre.name === this.state.select_val).genre_code) {
+          return true;
+        } 
       }
     }
     return false;
   }
-
-  const onSelectChange = (val) => {
-    // this.setState({select_val: val})
-    setSelect_val(val)
-    console.log("selct val111", val)
-    console.log("movie length", movies.length)
-    if (select_val != "" && movies.length != 0){
-      // console.log("im here")
-      let movieAmount = movies.filter(filterMovie)
-      console.log('number of movies are', movieAmount.length)
-      setFilteredMovies(movieAmount)
-    }
-  } 
-  // useEffect (() => {
-  //   // setMovies(handle_set)
-  // }, [select_val])
-  // console.log(genres)
-
-  // const handleSetMovies = (data) => setMovies(data) 
-  return (
-    <React.Fragment>
-    <h1 className="movie_header">Movie App</h1>
-    <SearchInput genres={genres} onSelectChange={onSelectChange} onSearchSubmit={onSearchSubmit}/>
-    <MovieList sel={select_val} movies={filteredMovies}/>
-  </React.Fragment>
-  )
+  render() {
+    return (
+      <React.Fragment>
+        <h1 className="movie_header">Movie App</h1>
+        <SearchInput genres={genres} onSelectChange={this.onSelectChange} onSearchSubmit={this.onSearchSubmit}/>
+        <MovieList sel={this.state.select_val} movies={this.state.filteredMovies}/>
+      </React.Fragment>
+    )
+  }
 }
+
 
 export default Movie
